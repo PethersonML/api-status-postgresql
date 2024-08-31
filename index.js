@@ -1,14 +1,13 @@
-import dotenv from "dotenv";
-import express from "express";
-import databaseDatasRoutes from "./routes/databaseDatasRoutes";
-import database from "./infra/database.js";
+// import dotenv from "dotenv";
+// dotenv.config({ path: `./.env.${process.env.NODE_ENV}` });
 
-dotenv.config({ path: `.env.${process.env.NODE_ENV}` });
+import express from "express";
+import databaseDatasRoutes from "./routes/databaseDatasRoutes.js";
 
 const app = express();
 const port = process.env.PORT || 3000;
 
-app.use("api/v1", databaseDatasRoutes);
+app.use("/api/v1", databaseDatasRoutes);
 
 // app.get("/api/v1/status", async (req, res) => {
 //   const updatedAt = new Date().toISOString();

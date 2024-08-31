@@ -1,8 +1,12 @@
 import express from "express";
-import databaseDatasControler from "../controllers/databaseDatasController";
+import {
+  getAllData,
+  getPostgresInfo,
+} from "../controllers/databaseDatasController.js";
 
 const router = express.Router();
 
-router.get("/postgresInfo", databaseDatasControler.getPostgresInfo);
+router.get("/general", getAllData);
+router.get("/postgresInfo", getPostgresInfo);
 
 export default router;

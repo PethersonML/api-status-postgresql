@@ -1,3 +1,6 @@
+import dotenv from "dotenv";
+dotenv.config({ path: `./.env.${process.env.NODE_ENV}` });
+
 import pg from "pg";
 
 const { Client } = pg;
@@ -37,4 +40,3 @@ function getSSLValues() {
 
   return process.env.NODE_ENV === "development" ? false : true;
 }
-

@@ -1,28 +1,42 @@
-import database from "../infra/database";
+import database from "../infra/database.js";
 
-async function info() {
-  const infoServerVersion = database.query("SHOW server_version");
-  const infoServerEncoding = database.query("SHOW server_encoding");
-  const infoClientEncoding = database.query("SHOW client_encoding");
-  const infoTimezone = database.query("SHOW TimeZone");
-  const infoDateStyle = database.query("SHOW DateStyle");
-  const infoConfigFile = database.query("SHOW config_file");
-  const infoHbaFile = database.query("SHOW hba_file");
+const info = async () => {
+  const infoServerVersion = await database.query("SHOW server_version");
+  const infoServerEncoding = await database.query("SHOW server_encoding");
+  const infoClientEncoding = await database.query("SHOW client_encoding");
+  const infoTimezone = await database.query("SHOW TimeZone");
+  const infoDateStyle = await database.query("SHOW DateStyle");
+  const infoConfigFile = await database.query("SHOW config_file");
+  const infoHbaFile = await database.query("SHOW hba_file");
 
   return {
-    server_version: infoServerVersion,
-    server_encoding: infoServerEncoding,
-    client_encoding: infoClientEncoding,
-    timezone: infoTimezone,
-    datestyle: infoDateStyle,
-    config_file: infoConfigFile,
-    hba_file: infoHbaFile,
+    server_version: infoServerVersion.rows[0].server_version,
+    server_encoding: infoServerEncoding.rows[0].server_encoding,
+    client_encoding: infoClientEncoding.rows[0].client_encoding,
+    timezone: infoTimezone.rows[0].TimeZone,
+    datestyle: infoDateStyle.rows[0].DateStyle,
+    config_file: infoConfigFile.rows[0].config_file,
+    hba_file: infoHbaFile.rows[0].hba_file,
   };
-}
-
-exports.getPostgresInfo = async (req, res) => {
-  res.status(200).json(info());
 };
+
+export const getAllData = async (req, res) => {
+  const postgresInfo = await info();
+  res.status(200).json({
+    postgres_configurations: {
+      info: postgresInfo,
+    },
+  });
+};
+
+export const getPostgresInfo = async (req, res) => {
+  const postgresInfo = await info();
+  res.status(200).json({
+    postgres_info: postgresInfo,
+  });
+};
+
+// export default getAllData;
 
 // Paramentros que quero testar com o SHOW
 //
