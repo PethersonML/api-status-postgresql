@@ -7,30 +7,24 @@ const infos = async () => {
 
   const postgresInfo = {};
 
-  result.rows.forEach((element) => {
-    postgresInfo[element.name] = element.setting;
+  const order = [
+    "server_version",
+    "server_encoding",
+    "client_encoding",
+    "TimeZone",
+    "DateStyle",
+    "config_file",
+    "hba_file",
+  ];
+
+  order.forEach((key) => {
+    const setting = result.rows.find((element) => element.name === key);
+    if (!!setting) {
+      postgresInfo[setting.name] = setting.setting;
+    }
   });
 
   return postgresInfo;
-
-  // Old function
-  // const infoServerVersion = await database.query("SHOW server_version;");
-  // const infoServerEncoding = await database.query("SHOW server_encoding;");
-  // const infoClientEncoding = await database.query("SHOW client_encoding;");
-  // const infoTimezone = await database.query("SHOW TimeZone;");
-  // const infoDateStyle = await database.query("SHOW DateStyle;");
-  // const infoConfigFile = await database.query("SHOW config_file;");
-  // const infoHbaFile = await database.query("SHOW hba_file;");
-
-  // return {
-  //   server_version: infoServerVersion.rows[0].server_version,
-  //   server_encoding: infoServerEncoding.rows[0].server_encoding,
-  //   client_encoding: infoClientEncoding.rows[0].client_encoding,
-  //   timezone: infoTimezone.rows[0].TimeZone,
-  //   datestyle: infoDateStyle.rows[0].DateStyle,
-  //   config_file: infoConfigFile.rows[0].config_file,
-  //   hba_file: infoHbaFile.rows[0].hba_file,
-  // };
 };
 
 const connection = async () => {
@@ -40,8 +34,26 @@ const connection = async () => {
 
   const connectionConfigs = {};
 
-  result.rows.forEach((element) => {
-    connectionConfigs[element.name] = element.setting;
+  const order = [
+    "listen_addresses",
+    "port",
+    "ssl",
+    "max_connections",
+    "superuser_reserved_connections",
+    "reserved_connections",
+    "tcp_user_timeout",
+    "tcp_keepalives_count",
+    "tcp_keepalives_idle",
+    "tcp_keepalives_interval",
+    "statement_timeout",
+    "idle_in_transaction_session_timeout",
+  ];
+
+  order.forEach((key) => {
+    const setting = result.rows.find((element) => element.name === key);
+    if (!!setting) {
+      connectionConfigs[setting.name] = setting.setting;
+    }
   });
 
   return connectionConfigs;
