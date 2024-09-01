@@ -1,5 +1,6 @@
-import dotenv from "dotenv";
-dotenv.config({ path: `./.env.${process.env.NODE_ENV}` });
+// O import do dotenv precisava ficar aqui para funcionar
+// import dotenv from "dotenv";
+// dotenv.config({ path: `./.env.${process.env.NODE_ENV}` });
 
 import pg from "pg";
 

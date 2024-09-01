@@ -1,3 +1,4 @@
+// Com o import do dotenv aqui as variaveis de ambiente não eram carregadas
 // import dotenv from "dotenv";
 // dotenv.config({ path: `./.env.${process.env.NODE_ENV}` });
 
