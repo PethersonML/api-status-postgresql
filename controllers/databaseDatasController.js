@@ -1,23 +1,36 @@
 import database from "../infra/database.js";
 
 const infos = async () => {
-  const infoServerVersion = await database.query("SHOW server_version;");
-  const infoServerEncoding = await database.query("SHOW server_encoding;");
-  const infoClientEncoding = await database.query("SHOW client_encoding;");
-  const infoTimezone = await database.query("SHOW TimeZone;");
-  const infoDateStyle = await database.query("SHOW DateStyle;");
-  const infoConfigFile = await database.query("SHOW config_file;");
-  const infoHbaFile = await database.query("SHOW hba_file;");
+  const result = await database.query(
+    "SELECT name, setting FROM pg_settings WHERE name IN ('server_version', 'server_encoding', 'TimeZone', 'DateStyle', 'config_file', 'hba_file');",
+  );
 
-  return {
-    server_version: infoServerVersion.rows[0].server_version,
-    server_encoding: infoServerEncoding.rows[0].server_encoding,
-    client_encoding: infoClientEncoding.rows[0].client_encoding,
-    timezone: infoTimezone.rows[0].TimeZone,
-    datestyle: infoDateStyle.rows[0].DateStyle,
-    config_file: infoConfigFile.rows[0].config_file,
-    hba_file: infoHbaFile.rows[0].hba_file,
-  };
+  const postgresInfo = {};
+
+  result.rows.forEach((element) => {
+    postgresInfo[element.name] = element.setting;
+  });
+
+  return postgresInfo;
+
+  // Old function
+  // const infoServerVersion = await database.query("SHOW server_version;");
+  // const infoServerEncoding = await database.query("SHOW server_encoding;");
+  // const infoClientEncoding = await database.query("SHOW client_encoding;");
+  // const infoTimezone = await database.query("SHOW TimeZone;");
+  // const infoDateStyle = await database.query("SHOW DateStyle;");
+  // const infoConfigFile = await database.query("SHOW config_file;");
+  // const infoHbaFile = await database.query("SHOW hba_file;");
+
+  // return {
+  //   server_version: infoServerVersion.rows[0].server_version,
+  //   server_encoding: infoServerEncoding.rows[0].server_encoding,
+  //   client_encoding: infoClientEncoding.rows[0].client_encoding,
+  //   timezone: infoTimezone.rows[0].TimeZone,
+  //   datestyle: infoDateStyle.rows[0].DateStyle,
+  //   config_file: infoConfigFile.rows[0].config_file,
+  //   hba_file: infoHbaFile.rows[0].hba_file,
+  // };
 };
 
 const connection = async () => {
@@ -29,18 +42,15 @@ const connection = async () => {
 
   result.rows.forEach((element) => {
     connectionConfigs[element.name] = element.setting;
-    return connectionConfigs;
   });
 
   return connectionConfigs;
 };
 
-console.log(await connection());
-
 export const getAllData = async (req, res) => {
   res.status(200).json({
     postgres_configurations: {
-      infos: await info(),
+      infos: await infos(),
       connection: await connection(),
     },
   });
