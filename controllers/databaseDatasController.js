@@ -1,13 +1,13 @@
 import database from "../infra/database.js";
 
-const info = async () => {
-  const infoServerVersion = await database.query("SHOW server_version");
-  const infoServerEncoding = await database.query("SHOW server_encoding");
-  const infoClientEncoding = await database.query("SHOW client_encoding");
-  const infoTimezone = await database.query("SHOW TimeZone");
-  const infoDateStyle = await database.query("SHOW DateStyle");
-  const infoConfigFile = await database.query("SHOW config_file");
-  const infoHbaFile = await database.query("SHOW hba_file");
+const infos = async () => {
+  const infoServerVersion = await database.query("SHOW server_version;");
+  const infoServerEncoding = await database.query("SHOW server_encoding;");
+  const infoClientEncoding = await database.query("SHOW client_encoding;");
+  const infoTimezone = await database.query("SHOW TimeZone;");
+  const infoDateStyle = await database.query("SHOW DateStyle;");
+  const infoConfigFile = await database.query("SHOW config_file;");
+  const infoHbaFile = await database.query("SHOW hba_file;");
 
   return {
     server_version: infoServerVersion.rows[0].server_version,
@@ -20,19 +20,41 @@ const info = async () => {
   };
 };
 
+const connection = async () => {
+  const result = await database.query(
+    "SELECT name, setting FROM pg_settings WHERE name IN ('listen_addresses', 'port', 'ssl', 'max_connections', 'superuser_reserved_connections', 'reserved_connections', 'tcp_user_timeout', 'tcp_keepalives_count', 'tcp_keepalives_idle', 'tcp_keepalives_interval', 'statement_timeout', 'idle_in_transaction_session_timeout');",
+  );
+
+  const connectionConfigs = {};
+
+  result.rows.forEach((element) => {
+    connectionConfigs[element.name] = element.setting;
+    return connectionConfigs;
+  });
+
+  return connectionConfigs;
+};
+
+console.log(await connection());
+
 export const getAllData = async (req, res) => {
-  const postgresInfo = await info();
   res.status(200).json({
     postgres_configurations: {
-      info: postgresInfo,
+      infos: await info(),
+      connection: await connection(),
     },
   });
 };
 
 export const getPostgresInfo = async (req, res) => {
-  const postgresInfo = await info();
   res.status(200).json({
-    postgres_info: postgresInfo,
+    postgres_info: await infos(),
+  });
+};
+
+export const getConnectionConfig = async (req, res) => {
+  res.status(200).json({
+    connection_configs: await connection(),
   });
 };
 
@@ -41,7 +63,7 @@ export const getPostgresInfo = async (req, res) => {
 // Paramentros que quero testar com o SHOW
 //
 // - Info
-// - client_encoding
+// -- client_encoding
 // -- config_file
 // -- DateStyle
 // -- hba_file
@@ -56,9 +78,6 @@ export const getPostgresInfo = async (req, res) => {
 // -- port
 // -- reserved_connections
 // -- ssl
-// -- ssl_ca_file
-// -- ssl_cert_file
-// -- ssl_key_file
 // -- statement_timeout
 // -- superuser_reserved_connections
 // -- tcp_user_timeout
