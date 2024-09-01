@@ -47,11 +47,48 @@ const connection = async () => {
   return connectionConfigs;
 };
 
+const logs = async () => {
+  const resultFiles = await database.query(
+    "SELECT name, setting FROM pg_settings WHERE name IN ('log_directory', 'log_destination');",
+  );
+  const resultContent = await database.query(
+    "SELECT name, setting FROM pg_settings WHERE name IN ('log_duration', 'log_line_prefix', 'log_lock_waits', 'log_min_messages', 'log_statement');",
+  );
+
+  const logFiles = {};
+  const logContent = {};
+
+  const order = [
+    "log_min_messages",
+    "log_line_prefix",
+    "log_statement",
+    "log_duration",
+    "log_lock_waits",
+  ];
+
+  resultFiles.rows.forEach((element) => {
+    logFiles[element.name] = element.setting;
+  });
+
+  order.forEach((key) => {
+    const setting = resultContent.rows.find((element) => element.name === key);
+    if (!!setting) {
+      logContent[setting.name] = setting.setting;
+    }
+  });
+
+  return {
+    log_files: logFiles,
+    log_content: logContent,
+  };
+};
+
 export const getAllData = async (req, res) => {
   res.status(200).json({
     postgres_configurations: {
       infos: await infos(),
       connection: await connection(),
+      logs: await logs(),
     },
   });
 };
@@ -65,6 +102,12 @@ export const getPostgresInfo = async (req, res) => {
 export const getConnectionConfig = async (req, res) => {
   res.status(200).json({
     connection_configs: await connection(),
+  });
+};
+
+export const getLogsConfig = async (req, res) => {
+  res.status(200).json({
+    logs_configs: await logs(),
   });
 };
 
