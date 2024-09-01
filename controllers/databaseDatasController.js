@@ -95,12 +95,77 @@ const logs = async () => {
   };
 };
 
+const performance = async () => {
+  const resultAutovacuum = await database.query(
+    "SELECT name, setting FROM  pg_settings WHERE name IN ('autovacuum', 'autovacuum_analyze_scale_factor', 'autovacuum_max_workers', 'autovacuum_naptime', 'autovacuum_vacuum_scale_factor', 'autovacuum_vacuum_threshold');",
+  );
+  const resultWAL = await database.query(
+    "SELECT name, setting FROM  pg_settings WHERE name IN ('effective_io_concurrency', 'synchronous_commit', 'checkpoint_timeout', 'wal_buffers', 'wal_writer_delay');",
+  );
+  const resultOthers = await database.query(
+    "SELECT name, setting FROM  pg_settings WHERE name IN ('effective_cache_size', 'maintenance_work_mem', 'max_locks_per_transaction', 'max_parallel_maintenance_workers', 'max_parallel_workers', 'max_parallel_workers_per_gather', 'max_worker_processes', 'random_page_cost', 'seq_page_cost', 'shared_buffers', 'work_mem');",
+  );
+
+  const performanceAutovacuum = {};
+  const performanceWAL = {};
+  const performance = {
+    autovacuum: {},
+    wal: {},
+  };
+
+  const order = [
+    "autovacuum",
+    "autovacuum_max_workers",
+    "autovacuum_vacuum_threshold",
+    "autovacuum_naptime",
+    "autovacuum_analyze_scale_factor",
+    "autovacuum_vacuum_scale_factor",
+    "synchronous_commit",
+    "checkpoint_timeout",
+    "effective_io_concurrency",
+    "wal_writer_delay",
+    "wal_buffers",
+    "shared_buffers",
+    "work_mem",
+    "max_parallel_workers",
+    "max_parallel_workers_per_gather",
+    "max_worker_processes",
+    "maintenance_work_mem",
+    "max_parallel_maintenance_workers",
+    "effective_cache_size",
+    "random_page_cost",
+    "seq_page_cost",
+    "max_locks_per_transaction",
+  ];
+
+  order.forEach((key) => {
+    let setting = resultAutovacuum.rows.find((element) => element.name === key);
+    if (!!setting) {
+      performanceAutovacuum[setting.name] = setting.setting;
+    }
+    setting = resultWAL.rows.find((element) => element.name === key);
+    if (!!setting) {
+      performanceWAL[setting.name] = setting.setting;
+    }
+    setting = resultOthers.rows.find((element) => element.name === key);
+    if (!!setting) {
+      performance[setting.name] = setting.setting;
+    }
+  });
+
+  performance.autovacuum = performanceAutovacuum;
+  performance.wal = performanceWAL;
+
+  return performance;
+};
+
 export const getAllData = async (req, res) => {
   res.status(200).json({
     postgres_configurations: {
       infos: await infos(),
       connection: await connection(),
       logs: await logs(),
+      performance: await performance(),
     },
   });
 };
@@ -120,6 +185,12 @@ export const getConnectionConfig = async (req, res) => {
 export const getLogsConfig = async (req, res) => {
   res.status(200).json({
     logs_configs: await logs(),
+  });
+};
+
+export const getPerformanceConfig = async (req, res) => {
+  res.status(200).json({
+    performance_configs: await performance(),
   });
 };
 
