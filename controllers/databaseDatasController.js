@@ -1,5 +1,25 @@
 import database from "../infra/database.js";
 
+// TODO: Verificar se é possivel mudar a unidade de medida dos dados retornados da view pg_settings
+
+// NOTE: Função para fazer os testes das mudanças de unidade de medida
+const changeUnits = async () => {
+  const resultConnection = await database.query(
+    `SELECT name, 
+            CASE 
+              WHEN name IN ('statement_timeout', 'idle_in_transaction_session_timeout', 'tcp_user_timeout', 'tcp_keepalives_interval') THEN setting || ' ms' 
+              WHEN name = 'tcp_keepalives_idle' THEN setting::float / 1000 || ' s' 
+              ELSE setting 
+            END as formatted_setting 
+    FROM pg_settings 
+    WHERE name IN ('listen_addresses', 'port', 'ssl', 'max_connections', 'superuser_reserved_connections', 'reserved_connections', 'tcp_user_timeout', 'tcp_keepalives_count', 'tcp_keepalives_idle', 'tcp_keepalives_interval', 'statement_timeout', 'idle_in_transaction_session_timeout');`,
+  );
+
+  return resultConnection.rows;
+};
+
+console.log(await changeUnits());
+
 const infos = async () => {
   const result = await database.query(
     "SELECT name, setting FROM pg_settings WHERE name IN ('server_version', 'server_encoding', 'TimeZone', 'DateStyle', 'config_file', 'hba_file');",
